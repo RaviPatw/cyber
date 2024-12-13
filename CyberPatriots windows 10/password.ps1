@@ -5,23 +5,23 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # Log file to record actions
-$logFile = "C:\SetUserPasswordsLog.txt"
+$logFile = "C:\SetAllUserPasswordsLog.txt"
 Write-Output "Setting all user passwords to P@s$w0r3! and disabling 'Password Never Expires'" | Out-File -Append $logFile
 
 # New password
 $newPassword = "P@s$w0r3!"
 
-# Get all local users
-$users = Get-LocalUser | Where-Object { $_.Enabled -eq $true -and $_.Name -ne "Administrator" }
+# Get all local users (including administrators)
+$users = Get-LocalUser | Where-Object { $_.Enabled -eq $true }
 
-# Iterate through each user
+# Iterate through each user and apply changes
 foreach ($user in $users) {
     try {
         # Set the new password
         $user | Set-LocalUser -Password (ConvertTo-SecureString -String $newPassword -AsPlainText -Force)
         Write-Output "Password for user '$($user.Name)' set successfully." | Out-File -Append $logFile
 
-        # Disable "Password Never Expires"
+        # Disable "Password Never Expires" for all users
         $user | Set-LocalUser -PasswordNeverExpires $false
         Write-Output "Disabled 'Password Never Expires' for user '$($user.Name)'." | Out-File -Append $logFile
     } catch {
